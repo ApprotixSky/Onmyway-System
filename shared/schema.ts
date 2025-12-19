@@ -60,3 +60,6 @@ export interface FileEntry {
   lastModified: string;
   permissions: string;
 }
+
+// Export Replit Auth models
+export * from "./models/auth";

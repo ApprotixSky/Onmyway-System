@@ -1,23 +1,21 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { Loader2, Lock, User, ShieldCheck } from "lucide-react";
+import { LogIn, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AuthPage() {
-  const [username, setUsername] = useState("mukegile"); // Seed user prefill
-  const [password, setPassword] = useState("");
-  const { login, isLoggingIn, user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
-  if (user) {
-    setLocation("/");
-    return null;
-  }
+  useEffect(() => {
+    if (user && !isLoading) {
+      setLocation("/");
+    }
+  }, [user, isLoading, setLocation]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    login({ username, password });
+  const handleLogin = () => {
+    window.location.href = "/api/login";
   };
 
   return (
@@ -49,49 +47,27 @@ export default function AuthPage() {
             </motion.div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2 group">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1 group-focus-within:text-primary transition-colors">Username</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
-                  placeholder="Enter identity"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2 group">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1 group-focus-within:text-primary transition-colors">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
-                  placeholder="Enter passkey"
-                />
-              </div>
-            </div>
+          <div className="space-y-6">
+            <p className="text-center text-sm text-muted-foreground">
+              Log in with your Replit account to access ONMYWAY.
+            </p>
 
             <button
-              type="submit"
-              disabled={isLoggingIn}
+              onClick={handleLogin}
+              disabled={isLoading}
               className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-black font-bold py-4 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2"
             >
-              {isLoggingIn ? (
+              {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Authenticating...
+                  <div className="w-5 h-5 animate-spin rounded-full border-2 border-current border-t-transparent" /> Loading...
                 </>
               ) : (
-                "Authenticate"
+                <>
+                  <LogIn className="w-5 h-5" /> Log In with Replit
+                </>
               )}
             </button>
-          </form>
+          </div>
 
           <div className="mt-8 text-center">
             <p className="text-[10px] text-muted-foreground font-mono">

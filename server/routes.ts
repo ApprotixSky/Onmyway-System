@@ -3,42 +3,19 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { setupAuth } from "./auth";
-import passport from "passport";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { randomBytes } from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-// Helper to ensure authenticated
-function isAuthenticated(req: any, res: any, next: any) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ message: "Unauthorized" });
-}
-
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  const { hashPassword } = setupAuth(app);
-
-  // Auth Routes
-  app.post(api.auth.login.path, passport.authenticate("local"), (req, res) => {
-    res.json(req.user);
-  });
-
-  app.post(api.auth.logout.path, (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.json({ message: "Logged out" });
-    });
-  });
-
-  app.get(api.auth.me.path, isAuthenticated, (req, res) => {
-    res.json(req.user);
-  });
+  // Setup Replit Auth FIRST (before other routes)
+  await setupAuth(app);
+  registerAuthRoutes(app);
 
   // Stats Routes (Simulated for "Real Server" feel)
   app.get(api.stats.current.path, isAuthenticated, async (req, res) => {
